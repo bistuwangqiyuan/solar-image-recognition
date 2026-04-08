@@ -1,0 +1,157 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const GITHUB_REPO = 'https://github.com/bistuwangqiyuan/solar-image-recognition';
+const GITHUB_ZIP  = `${GITHUB_REPO}/archive/refs/heads/main.zip`;
+
+const techStack = [
+  { name: 'Astro',            desc: '现代静态站点生成框架',        icon: '🚀' },
+  { name: 'TensorFlow.js',    desc: '浏览器端机器学习引擎',        icon: '🧠' },
+  { name: 'MobileNet v2',     desc: '轻量级图像分类模型',         icon: '📷' },
+  { name: 'Tailwind CSS',     desc: '实用优先的CSS框架',          icon: '🎨' },
+  { name: 'Netlify',          desc: '自动化部署与托管平台',        icon: '☁️' },
+  { name: 'TypeScript',       desc: '类型安全的JavaScript超集',    icon: '📘' },
+];
+
+const directories = [
+  { path: 'src/pages/',              desc: '页面组件 (首页、识别、历史、关于、仓库)' },
+  { path: 'src/components/',         desc: '可复用组件 (Header, Footer, ImageUpload 等)' },
+  { path: 'src/layouts/',            desc: '页面布局模板' },
+  { path: 'src/lib/',                desc: '核心库 (solar-recognition.ts AI识别引擎)' },
+  { path: 'src/styles/',             desc: '全局样式文件' },
+  { path: 'public/images/',          desc: '光伏板检测实拍图片素材' },
+  { path: 'netlify/functions/',      desc: 'Netlify Serverless Functions' },
+  { path: 'tests/',                  desc: '单元测试和集成测试' },
+];
+---
+
+<Layout title="代码仓库 - 光伏图像识别项目源码">
+  <div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+
+      <!-- 页面标题 -->
+      <div class="text-center mb-12">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          代码仓库
+        </h1>
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+          本项目完全开源，您可以自由查看、下载和使用源代码，包含完整的AI识别引擎和光伏板检测图片
+        </p>
+      </div>
+
+      <!-- 操作按钮区 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        <!-- GitHub 链接 -->
+        <a href={GITHUB_REPO} target="_blank" rel="noopener noreferrer"
+           class="group flex items-center gap-5 bg-gray-900 hover:bg-gray-800 text-white rounded-2xl p-6 transition-all shadow-lg hover:shadow-xl">
+          <div class="flex-shrink-0 w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center">
+            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-lg font-semibold mb-1 group-hover:underline">在 GitHub 上查看</div>
+            <p class="text-sm text-gray-300 truncate">bistuwangqiyuan/solar-image-recognition</p>
+          </div>
+          <svg class="w-5 h-5 flex-shrink-0 opacity-60 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+          </svg>
+        </a>
+
+        <!-- 下载源码 -->
+        <a href={GITHUB_ZIP}
+           class="group flex items-center gap-5 bg-gradient-to-r from-primary-600 to-solar-500 hover:from-primary-700 hover:to-solar-600 text-white rounded-2xl p-6 transition-all shadow-lg hover:shadow-xl">
+          <div class="flex-shrink-0 w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-lg font-semibold mb-1 group-hover:underline">下载源码 (ZIP)</div>
+            <p class="text-sm text-white/70">包含全部代码、图片和配置文件</p>
+          </div>
+          <svg class="w-5 h-5 flex-shrink-0 opacity-60 group-hover:translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Git 克隆命令 -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-12">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          快速开始
+        </h2>
+        <div class="space-y-3">
+          <div class="relative group">
+            <pre class="bg-gray-900 text-green-400 rounded-xl p-4 pr-14 text-sm overflow-x-auto font-mono"><code>git clone https://github.com/bistuwangqiyuan/solar-image-recognition.git</code></pre>
+            <button onclick="navigator.clipboard.writeText('git clone https://github.com/bistuwangqiyuan/solar-image-recognition.git');this.textContent='已复制!';setTimeout(()=>this.textContent='复制',1500)"
+                    class="absolute top-3 right-3 px-3 py-1 bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs rounded-lg transition-colors">复制</button>
+          </div>
+          <div class="relative group">
+            <pre class="bg-gray-900 text-green-400 rounded-xl p-4 pr-14 text-sm overflow-x-auto font-mono"><code>cd solar-image-recognition && pnpm install && pnpm dev</code></pre>
+            <button onclick="navigator.clipboard.writeText('cd solar-image-recognition && pnpm install && pnpm dev');this.textContent='已复制!';setTimeout(()=>this.textContent='复制',1500)"
+                    class="absolute top-3 right-3 px-3 py-1 bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs rounded-lg transition-colors">复制</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 项目结构 -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-12">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+          </svg>
+          项目结构
+        </h2>
+        <div class="divide-y divide-gray-100">
+          {directories.map(d => (
+            <div class="flex items-start gap-3 py-3">
+              <code class="flex-shrink-0 text-sm font-mono text-primary-600 bg-primary-50 px-2.5 py-0.5 rounded-lg">{d.path}</code>
+              <span class="text-sm text-gray-600">{d.desc}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- 技术栈 -->
+      <div class="mb-12">
+        <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+          <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+          技术栈
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {techStack.map(t => (
+            <div class="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4 hover:shadow-md transition-shadow">
+              <span class="text-2xl">{t.icon}</span>
+              <div>
+                <div class="font-medium text-gray-900">{t.name}</div>
+                <div class="text-sm text-gray-500">{t.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- 许可证 -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 text-center">
+        <h2 class="text-lg font-semibold text-gray-900 mb-2">开源许可</h2>
+        <p class="text-gray-600 mb-4">
+          本项目基于 <span class="font-medium text-gray-900">MIT License</span> 开源，您可以自由使用、修改和分发
+        </p>
+        <a href={`${GITHUB_REPO}/blob/main/LICENSE`} target="_blank" rel="noopener noreferrer"
+           class="inline-flex items-center gap-1.5 text-primary-600 hover:text-primary-700 font-medium text-sm transition-colors">
+          查看完整许可证
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+          </svg>
+        </a>
+      </div>
+
+    </div>
+  </div>
+</Layout>

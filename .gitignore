@@ -106,3 +106,9 @@ temp/
 
 # Supabase
 .supabase/
+
+# Playwright MCP
+.playwright-mcp/
+
+# Zip archives
+*.zip

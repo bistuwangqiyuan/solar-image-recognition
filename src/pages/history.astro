@@ -264,56 +264,206 @@ import Layout from '../layouts/Layout.astro';
 
   <!-- 历史记录脚本 -->
   <script>
-    // 模拟数据
     const mockRecords = [
       {
         id: '1',
-        image_url: '/images/sample1.jpg',
-        image_name: '光伏板_20241219_001.jpg',
+        image_url: '/images/demo-solar-clean.jpg',
+        image_name: '光伏电站_正常巡检_001.jpg',
         recognition_result: {
           status: 'success',
           predictions: [
-            { label: '正常光伏板', confidence: 0.95 },
-            { label: '树叶遮挡', confidence: 0.78 }
+            { label: '正常光伏板', confidence: 0.93 },
           ],
-          confidence: 0.865,
-          processing_time: 3200,
-          api_used: 'aliyun'
+          confidence: 0.93,
+          processing_time: 4820,
+          api_used: 'tensorflow-mobilenet-v2',
+          raw_labels: [
+            { className: 'solar dish, solar collector, solar furnace', probability: 0.971 },
+            { className: 'greenhouse, nursery, glasshouse', probability: 0.008 },
+          ],
         },
-        created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString()
+        created_at: new Date(Date.now() - 1000 * 60 * 12).toISOString(),
       },
       {
         id: '2',
-        image_url: '/images/sample2.jpg',
-        image_name: '光伏板_20241219_002.jpg',
+        image_url: '/images/sample8.png',
+        image_name: '光伏板_落叶检测_002.png',
         recognition_result: {
           status: 'success',
           predictions: [
-            { label: '正常光伏板', confidence: 0.92 },
-            { label: '灰尘覆盖', confidence: 0.65 }
+            { label: '树叶遮挡', confidence: 0.82 },
+            { label: '正常光伏板', confidence: 0.35 },
           ],
-          confidence: 0.785,
-          processing_time: 2800,
-          api_used: 'baidu'
+          confidence: 0.585,
+          processing_time: 5130,
+          api_used: 'tensorflow-mobilenet-v2',
+          raw_labels: [
+            { className: 'solar dish, solar collector, solar furnace', probability: 0.412 },
+            { className: 'greenhouse, nursery, glasshouse', probability: 0.087 },
+          ],
         },
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString()
+        created_at: new Date(Date.now() - 1000 * 60 * 38).toISOString(),
       },
       {
         id: '3',
-        image_url: '/images/sample3.jpg',
-        image_name: '光伏板_20241219_003.jpg',
+        image_url: '/images/sample7.png',
+        image_name: '光伏板_灰尘近景_003.png',
         recognition_result: {
           status: 'success',
           predictions: [
-            { label: '正常光伏板', confidence: 0.88 },
-            { label: '云彩阴影', confidence: 0.72 }
+            { label: '灰尘覆盖', confidence: 0.88 },
+            { label: '正常光伏板', confidence: 0.22 },
           ],
-          confidence: 0.8,
-          processing_time: 3500,
-          api_used: 'aliyun'
+          confidence: 0.55,
+          processing_time: 4650,
+          api_used: 'tensorflow-mobilenet-v2',
+          raw_labels: [
+            { className: 'solar dish, solar collector, solar furnace', probability: 0.356 },
+            { className: 'prayer rug, prayer mat', probability: 0.112 },
+          ],
         },
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString()
-      }
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 1.5).toISOString(),
+      },
+      {
+        id: '4',
+        image_url: '/images/sample4.png',
+        image_name: '光伏板_严重植被遮挡_004.png',
+        recognition_result: {
+          status: 'success',
+          predictions: [
+            { label: '树叶遮挡', confidence: 0.95 },
+            { label: '其他异物', confidence: 0.24 },
+          ],
+          confidence: 0.595,
+          processing_time: 4280,
+          api_used: 'tensorflow-mobilenet-v2',
+          raw_labels: [
+            { className: 'greenhouse, nursery, glasshouse', probability: 0.324 },
+            { className: 'hay', probability: 0.076 },
+          ],
+        },
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
+      },
+      {
+        id: '5',
+        image_url: '/images/sample5.png',
+        image_name: '光伏板_阴影分析_005.png',
+        recognition_result: {
+          status: 'success',
+          predictions: [
+            { label: '云彩阴影', confidence: 0.79 },
+            { label: '正常光伏板', confidence: 0.38 },
+          ],
+          confidence: 0.585,
+          processing_time: 4910,
+          api_used: 'tensorflow-mobilenet-v2',
+          raw_labels: [
+            { className: 'solar dish, solar collector, solar furnace', probability: 0.523 },
+            { className: 'sundial', probability: 0.045 },
+          ],
+        },
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
+      },
+      {
+        id: '6',
+        image_url: '/images/sample2.png',
+        image_name: '光伏板_异物堆积_006.png',
+        recognition_result: {
+          status: 'success',
+          predictions: [
+            { label: '其他异物', confidence: 0.91 },
+            { label: '正常光伏板', confidence: 0.18 },
+          ],
+          confidence: 0.545,
+          processing_time: 4560,
+          api_used: 'tensorflow-mobilenet-v2',
+          raw_labels: [
+            { className: 'solar dish, solar collector, solar furnace', probability: 0.198 },
+            { className: 'confectionery, confectionary, candy store', probability: 0.085 },
+          ],
+        },
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString(),
+      },
+      {
+        id: '7',
+        image_url: '/images/sample3.png',
+        image_name: '光伏板_积尘检测_007.png',
+        recognition_result: {
+          status: 'success',
+          predictions: [
+            { label: '灰尘覆盖', confidence: 0.76 },
+            { label: '正常光伏板', confidence: 0.41 },
+          ],
+          confidence: 0.585,
+          processing_time: 4120,
+          api_used: 'tensorflow-mobilenet-v2',
+          raw_labels: [
+            { className: 'solar dish, solar collector, solar furnace', probability: 0.645 },
+            { className: 'tile roof', probability: 0.032 },
+          ],
+        },
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+      },
+      {
+        id: '8',
+        image_url: '/images/sample9.png',
+        image_name: '光伏板_杂草覆盖_008.png',
+        recognition_result: {
+          status: 'success',
+          predictions: [
+            { label: '树叶遮挡', confidence: 0.97 },
+            { label: '其他异物', confidence: 0.32 },
+          ],
+          confidence: 0.645,
+          processing_time: 5340,
+          api_used: 'tensorflow-mobilenet-v2',
+          raw_labels: [
+            { className: 'greenhouse, nursery, glasshouse', probability: 0.412 },
+            { className: 'hay', probability: 0.098 },
+          ],
+        },
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 36).toISOString(),
+      },
+      {
+        id: '9',
+        image_url: '/images/sample10.png',
+        image_name: '光伏板_鸟粪污染_009.png',
+        recognition_result: {
+          status: 'success',
+          predictions: [
+            { label: '其他异物', confidence: 0.84 },
+            { label: '灰尘覆盖', confidence: 0.42 },
+          ],
+          confidence: 0.63,
+          processing_time: 4780,
+          api_used: 'tensorflow-mobilenet-v2',
+          raw_labels: [
+            { className: 'solar dish, solar collector, solar furnace', probability: 0.287 },
+            { className: 'window screen', probability: 0.065 },
+          ],
+        },
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
+      },
+      {
+        id: '10',
+        image_url: '/images/sample11.png',
+        image_name: '光伏板_颗粒物沉积_010.png',
+        recognition_result: {
+          status: 'success',
+          predictions: [
+            { label: '灰尘覆盖', confidence: 0.72 },
+            { label: '正常光伏板', confidence: 0.45 },
+          ],
+          confidence: 0.585,
+          processing_time: 4950,
+          api_used: 'tensorflow-mobilenet-v2',
+          raw_labels: [
+            { className: 'solar dish, solar collector, solar furnace', probability: 0.534 },
+            { className: 'tile roof', probability: 0.041 },
+          ],
+        },
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 72).toISOString(),
+      },
     ];
 
     // DOM元素
@@ -526,6 +676,17 @@ import Layout from '../layouts/Layout.astro';
           `;
           modalResults.appendChild(item);
         });
+
+        if (record.recognition_result.raw_labels?.length) {
+          const rawDiv = document.createElement('div');
+          rawDiv.className = 'mt-3 p-3 bg-gray-100 rounded-lg';
+          rawDiv.innerHTML = `<h4 class="text-xs font-medium text-gray-500 mb-2">MobileNet 原始标签</h4>` +
+            record.recognition_result.raw_labels.map(r =>
+              `<div class="flex justify-between text-xs text-gray-600 py-0.5">
+                <span>${r.className}</span><span>${(r.probability * 100).toFixed(1)}%</span>
+              </div>`).join('');
+          modalResults.appendChild(rawDiv);
+        }
       } else {
         modalResults.innerHTML = '<div class="text-sm text-gray-500">识别失败</div>';
       }

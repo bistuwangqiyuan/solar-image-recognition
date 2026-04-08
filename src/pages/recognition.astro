@@ -144,6 +144,54 @@ import Layout from '../layouts/Layout.astro';
             </div>
           </div>
 
+          <!-- 演示案例 -->
+          <div class="card" id="demo-cases-card">
+            <div class="card-header">
+              <h2 class="text-lg font-semibold text-gray-900">演示案例</h2>
+              <p class="text-sm text-gray-500 mt-1">点击任意案例，自动运行 AI 全流程识别</p>
+            </div>
+            <div class="card-body">
+              <div class="grid grid-cols-2 gap-3" id="demo-grid">
+                <button class="demo-case group relative overflow-hidden rounded-lg border-2 border-gray-200 hover:border-primary-400 transition-all focus:outline-none focus:ring-2 focus:ring-primary-400" data-src="/images/demo-solar-clean.jpg" data-name="正常光伏板_巡检.jpg">
+                  <img src="/images/demo-solar-clean.jpg" alt="正常光伏板" class="w-full h-24 object-cover" loading="lazy" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-2">
+                    <span class="text-xs font-medium text-white">正常光伏板</span>
+                  </div>
+                </button>
+                <button class="demo-case group relative overflow-hidden rounded-lg border-2 border-gray-200 hover:border-primary-400 transition-all focus:outline-none focus:ring-2 focus:ring-primary-400" data-src="/images/sample8.png" data-name="落叶遮挡_检测.png">
+                  <img src="/images/sample8.png" alt="落叶遮挡" class="w-full h-24 object-cover" loading="lazy" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-2">
+                    <span class="text-xs font-medium text-white">落叶遮挡</span>
+                  </div>
+                </button>
+                <button class="demo-case group relative overflow-hidden rounded-lg border-2 border-gray-200 hover:border-primary-400 transition-all focus:outline-none focus:ring-2 focus:ring-primary-400" data-src="/images/sample7.png" data-name="灰尘覆盖_近景.png">
+                  <img src="/images/sample7.png" alt="灰尘覆盖" class="w-full h-24 object-cover" loading="lazy" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-2">
+                    <span class="text-xs font-medium text-white">灰尘覆盖</span>
+                  </div>
+                </button>
+                <button class="demo-case group relative overflow-hidden rounded-lg border-2 border-gray-200 hover:border-primary-400 transition-all focus:outline-none focus:ring-2 focus:ring-primary-400" data-src="/images/sample5.png" data-name="阴影遮挡_检测.png">
+                  <img src="/images/sample5.png" alt="阴影遮挡" class="w-full h-24 object-cover" loading="lazy" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-2">
+                    <span class="text-xs font-medium text-white">阴影遮挡</span>
+                  </div>
+                </button>
+                <button class="demo-case group relative overflow-hidden rounded-lg border-2 border-gray-200 hover:border-primary-400 transition-all focus:outline-none focus:ring-2 focus:ring-primary-400" data-src="/images/sample2.png" data-name="异物堆积_检测.png">
+                  <img src="/images/sample2.png" alt="异物堆积" class="w-full h-24 object-cover" loading="lazy" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-2">
+                    <span class="text-xs font-medium text-white">异物堆积</span>
+                  </div>
+                </button>
+                <button class="demo-case group relative overflow-hidden rounded-lg border-2 border-gray-200 hover:border-primary-400 transition-all focus:outline-none focus:ring-2 focus:ring-primary-400" data-src="/images/sample4.png" data-name="严重植被遮挡_检测.png">
+                  <img src="/images/sample4.png" alt="严重植被遮挡" class="w-full h-24 object-cover" loading="lazy" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-2">
+                    <span class="text-xs font-medium text-white">严重植被遮挡</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- 使用说明 -->
           <div class="card">
             <div class="card-header">
@@ -190,36 +238,39 @@ import Layout from '../layouts/Layout.astro';
 
   <!-- 识别脚本 -->
   <script>
-    // 全局变量
-    let currentFile = null;
-    let recognitionResult = null;
+    import { recognizeSolarImage, loadModel } from '../lib/solar-recognition';
 
-    // DOM元素
-    const uploadArea = document.getElementById('upload-area');
-    const fileInput = document.getElementById('file-input');
-    const imagePreview = document.getElementById('image-preview');
-    const previewImg = document.getElementById('preview-img');
-    const fileName = document.getElementById('file-name');
-    const fileSize = document.getElementById('file-size');
-    const removeImageBtn = document.getElementById('remove-image');
-    const startRecognitionBtn = document.getElementById('start-recognition');
-    const recognitionProgress = document.getElementById('recognition-progress');
-    const progressFill = document.getElementById('progress-fill');
-    const progressText = document.getElementById('progress-text');
-    const recognitionResultDiv = document.getElementById('recognition-result');
-    const resultStatus = document.getElementById('result-status');
-    const resultStatusText = document.getElementById('result-status-text');
-    const overallConfidence = document.getElementById('overall-confidence');
-    const confidenceBar = document.getElementById('confidence-bar');
-    const recognitionTags = document.getElementById('recognition-tags');
-    const detailedResults = document.getElementById('detailed-results');
-    const coverageAnalysis = document.getElementById('coverage-analysis');
-    const cleaningAdvice = document.getElementById('cleaning-advice');
-    const saveResultBtn = document.getElementById('save-result');
-    const shareResultBtn = document.getElementById('share-result');
+    let currentFile: File | null = null;
+    let recognitionResult: any = null;
 
-    // 工具函数
-    function formatFileSize(bytes) {
+    const uploadArea = document.getElementById('upload-area')!;
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const imagePreview = document.getElementById('image-preview')!;
+    const previewImg = document.getElementById('preview-img') as HTMLImageElement;
+    const fileName = document.getElementById('file-name')!;
+    const fileSize = document.getElementById('file-size')!;
+    const removeImageBtn = document.getElementById('remove-image')!;
+    const startRecognitionBtn = document.getElementById('start-recognition') as HTMLButtonElement;
+    const recognitionProgress = document.getElementById('recognition-progress')!;
+    const progressFill = document.getElementById('progress-fill')!;
+    const progressText = document.getElementById('progress-text')!;
+    const recognitionResultDiv = document.getElementById('recognition-result')!;
+    const resultStatus = document.getElementById('result-status')!;
+    const resultStatusText = document.getElementById('result-status-text')!;
+    const overallConfidence = document.getElementById('overall-confidence')!;
+    const confidenceBar = document.getElementById('confidence-bar')!;
+    const recognitionTags = document.getElementById('recognition-tags')!;
+    const detailedResults = document.getElementById('detailed-results')!;
+    const coverageAnalysis = document.getElementById('coverage-analysis')!;
+    const cleaningAdvice = document.getElementById('cleaning-advice')!;
+    const saveResultBtn = document.getElementById('save-result')!;
+    const shareResultBtn = document.getElementById('share-result')!;
+
+    // -----------------------------------------------------------------------
+    // Helpers
+    // -----------------------------------------------------------------------
+
+    function formatFileSize(bytes: number) {
       if (bytes === 0) return '0 Bytes';
       const k = 1024;
       const sizes = ['Bytes', 'KB', 'MB', 'GB'];
@@ -227,50 +278,43 @@ import Layout from '../layouts/Layout.astro';
       return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 
-    function getConfidenceColor(confidence) {
-      if (confidence >= 0.8) return 'text-success-600';
-      if (confidence >= 0.6) return 'text-warning-600';
+    function getConfidenceColor(c: number) {
+      if (c >= 0.8) return 'text-success-600';
+      if (c >= 0.6) return 'text-warning-600';
       return 'text-danger-600';
     }
 
-    function getConfidenceText(confidence) {
-      if (confidence >= 0.8) return '高';
-      if (confidence >= 0.6) return '中';
+    function getConfidenceText(c: number) {
+      if (c >= 0.8) return '高';
+      if (c >= 0.6) return '中';
       return '低';
     }
 
-    function getTagClass(label) {
+    function getTagClass(label: string) {
       switch (label) {
         case '正常光伏板': return 'tag-normal';
-        case '树叶遮挡': return 'tag-leaf';
-        case '灰尘覆盖': return 'tag-dust';
-        case '云彩阴影': return 'tag-cloud';
-        default: return 'tag-other';
+        case '树叶遮挡':  return 'tag-leaf';
+        case '灰尘覆盖':  return 'tag-dust';
+        case '云彩阴影':  return 'tag-cloud';
+        default:          return 'tag-other';
       }
     }
 
-    // 文件处理
-    function handleFile(file) {
-      // 验证文件
-      const maxSize = 10 * 1024 * 1024; // 10MB
+    // -----------------------------------------------------------------------
+    // File handling
+    // -----------------------------------------------------------------------
+
+    function handleFile(file: File) {
+      const maxSize = 10 * 1024 * 1024;
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-      
-      if (!allowedTypes.includes(file.type)) {
-        alert('只支持 JPG、PNG、WebP 格式的图片');
-        return;
-      }
-      
-      if (file.size > maxSize) {
-        alert('图片大小不能超过 10MB');
-        return;
-      }
+
+      if (!allowedTypes.includes(file.type)) { alert('只支持 JPG、PNG、WebP 格式的图片'); return; }
+      if (file.size > maxSize) { alert('图片大小不能超过 10MB'); return; }
 
       currentFile = file;
-      
-      // 显示预览
       const reader = new FileReader();
       reader.onload = (e) => {
-        previewImg.src = e.target.result;
+        previewImg.src = e.target!.result as string;
         fileName.textContent = file.name;
         fileSize.textContent = formatFileSize(file.size);
         imagePreview.classList.remove('hidden');
@@ -279,32 +323,16 @@ import Layout from '../layouts/Layout.astro';
       reader.readAsDataURL(file);
     }
 
-    // 事件监听器
     uploadArea.addEventListener('click', () => fileInput.click());
-    
-    uploadArea.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      uploadArea.classList.add('dragover');
-    });
-    
-    uploadArea.addEventListener('dragleave', () => {
-      uploadArea.classList.remove('dragover');
-    });
-    
+
+    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+    uploadArea.addEventListener('dragleave', () => { uploadArea.classList.remove('dragover'); });
     uploadArea.addEventListener('drop', (e) => {
-      e.preventDefault();
-      uploadArea.classList.remove('dragover');
-      const files = e.dataTransfer.files;
-      if (files.length > 0) {
-        handleFile(files[0]);
-      }
+      e.preventDefault(); uploadArea.classList.remove('dragover');
+      if (e.dataTransfer?.files.length) handleFile(e.dataTransfer.files[0]);
     });
 
-    fileInput.addEventListener('change', (e) => {
-      if (e.target.files.length > 0) {
-        handleFile(e.target.files[0]);
-      }
-    });
+    fileInput.addEventListener('change', () => { if (fileInput.files?.length) handleFile(fileInput.files[0]); });
 
     removeImageBtn.addEventListener('click', () => {
       currentFile = null;
@@ -314,59 +342,13 @@ import Layout from '../layouts/Layout.astro';
       fileInput.value = '';
     });
 
-    // 模拟识别过程
-    async function simulateRecognition() {
-      const steps = [
-        { progress: 20, text: '上传图片中...' },
-        { progress: 40, text: '图片预处理...' },
-        { progress: 60, text: 'AI分析中...' },
-        { progress: 80, text: '生成结果...' },
-        { progress: 100, text: '识别完成' }
-      ];
+    // -----------------------------------------------------------------------
+    // Display result
+    // -----------------------------------------------------------------------
 
-      for (const step of steps) {
-        progressFill.style.width = step.progress + '%';
-        progressText.textContent = step.text;
-        await new Promise(resolve => setTimeout(resolve, 800));
-      }
-    }
-
-    // 生成模拟识别结果
-    function generateMockResult() {
-      const labels = ['正常光伏板', '树叶遮挡', '灰尘覆盖', '云彩阴影'];
-      const predictions = [];
-      
-      // 随机生成2-4个识别结果
-      const numPredictions = Math.floor(Math.random() * 3) + 2;
-      const usedLabels = new Set();
-      
-      for (let i = 0; i < numPredictions; i++) {
-        let label;
-        do {
-          label = labels[Math.floor(Math.random() * labels.length)];
-        } while (usedLabels.has(label));
-        
-        usedLabels.add(label);
-        predictions.push({
-          label,
-          confidence: Math.random() * 0.4 + 0.6 // 0.6-1.0
-        });
-      }
-      
-      return {
-        status: 'success',
-        predictions,
-        confidence: predictions.reduce((sum, p) => sum + p.confidence, 0) / predictions.length,
-        processing_time: Math.floor(Math.random() * 3000) + 2000,
-        api_used: 'aliyun'
-      };
-    }
-
-    // 显示识别结果
-    function displayResult(result) {
+    function displayResult(result: any) {
       recognitionResult = result;
-      
-      // 状态指示器
+
       if (result.status === 'success') {
         resultStatus.className = 'w-3 h-3 rounded-full bg-success-500';
         resultStatusText.textContent = '识别成功';
@@ -378,158 +360,130 @@ import Layout from '../layouts/Layout.astro';
       }
 
       if (result.status === 'success') {
-        // 整体置信度
-        const confidencePercent = Math.round(result.confidence * 100);
-        overallConfidence.textContent = `${confidencePercent}%`;
+        const pct = Math.round(result.confidence * 100);
+        overallConfidence.textContent = `${pct}%`;
         overallConfidence.className = `text-sm font-semibold ${getConfidenceColor(result.confidence)}`;
-        confidenceBar.style.width = confidencePercent + '%';
+        confidenceBar.style.width = pct + '%';
         confidenceBar.className = `progress-fill ${getConfidenceColor(result.confidence).replace('text-', 'bg-')}`;
 
-        // 识别标签
         recognitionTags.innerHTML = '';
-        result.predictions.forEach(prediction => {
+        result.predictions.forEach((p: any) => {
           const tag = document.createElement('span');
-          tag.className = `recognition-tag ${getTagClass(prediction.label)}`;
-          tag.textContent = prediction.label;
+          tag.className = `recognition-tag ${getTagClass(p.label)}`;
+          tag.textContent = p.label;
           recognitionTags.appendChild(tag);
         });
 
-        // 详细结果
         detailedResults.innerHTML = '';
-        result.predictions.forEach(prediction => {
+        result.predictions.forEach((p: any) => {
           const item = document.createElement('div');
           item.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-lg';
           item.innerHTML = `
-            <span class="text-sm font-medium text-gray-900">${prediction.label}</span>
+            <span class="text-sm font-medium text-gray-900">${p.label}</span>
             <div class="flex items-center space-x-2">
-              <span class="text-sm ${getConfidenceColor(prediction.confidence)}">${Math.round(prediction.confidence * 100)}%</span>
-              <span class="text-xs text-gray-500">${getConfidenceText(prediction.confidence)}</span>
-            </div>
-          `;
+              <span class="text-sm ${getConfidenceColor(p.confidence)}">${Math.round(p.confidence * 100)}%</span>
+              <span class="text-xs text-gray-500">${getConfidenceText(p.confidence)}</span>
+            </div>`;
           detailedResults.appendChild(item);
         });
 
-        // 遮挡程度分析
-        const coveragePredictions = result.predictions.filter(p => p.label !== '正常光伏板' && p.label !== '云彩阴影');
-        if (coveragePredictions.length > 0) {
-          const totalConfidence = coveragePredictions.reduce((sum, p) => sum + p.confidence, 0);
-          const avgConfidence = totalConfidence / coveragePredictions.length;
-          const percentage = Math.round(avgConfidence * 100);
-          
-          let level, description, bgColor;
-          if (percentage >= 70) {
-            level = 'high';
-            description = '严重遮挡';
-            bgColor = 'bg-danger-50 border-danger-200';
-          } else if (percentage >= 40) {
-            level = 'medium';
-            description = '中度遮挡';
-            bgColor = 'bg-warning-50 border-warning-200';
-          } else {
-            level = 'low';
-            description = '轻微遮挡';
-            bgColor = 'bg-success-50 border-success-200';
-          }
-          
+        // MobileNet raw labels (if available)
+        if (result.raw_labels?.length) {
+          const rawDiv = document.createElement('div');
+          rawDiv.className = 'mt-4 p-3 bg-gray-100 rounded-lg';
+          rawDiv.innerHTML = `<h4 class="text-xs font-medium text-gray-500 mb-2">MobileNet 原始识别标签</h4>` +
+            result.raw_labels.slice(0, 5).map((r: any) =>
+              `<div class="flex justify-between text-xs text-gray-600 py-0.5">
+                <span>${r.className}</span><span>${(r.probability * 100).toFixed(1)}%</span>
+              </div>`).join('');
+          detailedResults.appendChild(rawDiv);
+        }
+
+        const cover = result.predictions.filter((p: any) => p.label !== '正常光伏板' && p.label !== '云彩阴影');
+        if (cover.length > 0) {
+          const avg = cover.reduce((s: number, p: any) => s + p.confidence, 0) / cover.length;
+          const perc = Math.round(avg * 100);
+          const desc = perc >= 70 ? '严重遮挡' : perc >= 40 ? '中度遮挡' : '轻微遮挡';
+          const bg = perc >= 70 ? 'bg-danger-50 border-danger-200' : perc >= 40 ? 'bg-warning-50 border-warning-200' : 'bg-success-50 border-success-200';
           coverageAnalysis.innerHTML = `
-            <div class="p-4 rounded-lg border ${bgColor}">
+            <div class="p-4 rounded-lg border ${bg}">
               <div class="flex items-center justify-between mb-2">
                 <span class="text-sm font-medium text-gray-900">遮挡程度</span>
-                <span class="text-sm font-semibold ${getConfidenceColor(avgConfidence)}">${percentage}%</span>
+                <span class="text-sm font-semibold ${getConfidenceColor(avg)}">${perc}%</span>
               </div>
-              <div class="text-sm text-gray-600">${description}</div>
-            </div>
-          `;
+              <div class="text-sm text-gray-600">${desc}</div>
+            </div>`;
         } else {
           coverageAnalysis.innerHTML = `
             <div class="p-4 rounded-lg border bg-success-50 border-success-200">
               <div class="text-sm font-medium text-success-800">无遮挡</div>
               <div class="text-sm text-success-600">光伏板状态良好</div>
-            </div>
-          `;
+            </div>`;
         }
 
-        // 清洁建议
         let advice = '';
-        result.predictions.forEach(prediction => {
-          switch (prediction.label) {
-            case '正常光伏板':
-              advice += '✅ 检测到正常工作的光伏板。';
-              break;
-            case '树叶遮挡':
-              advice += ' 🍃 发现树叶遮挡，建议及时清理以保持发电效率。';
-              break;
-            case '灰尘覆盖':
-              advice += ' 🧹 检测到灰尘覆盖，建议定期清洁光伏板表面。';
-              break;
-            case '云彩阴影':
-              advice += ' ☁️ 云彩阴影影响发电，这是正常现象。';
-              break;
-            default:
-              advice += ' ⚠️ 发现其他异物，建议检查并清理。';
+        result.predictions.forEach((p: any) => {
+          switch (p.label) {
+            case '正常光伏板': advice += '✅ 检测到正常工作的光伏板。'; break;
+            case '树叶遮挡':  advice += ' 🍃 发现树叶遮挡，建议及时清理以保持发电效率。'; break;
+            case '灰尘覆盖':  advice += ' 🧹 检测到灰尘覆盖，建议定期清洁光伏板表面。'; break;
+            case '云彩阴影':  advice += ' ☁️ 云彩阴影影响发电，这是正常现象。'; break;
+            default:          advice += ' ⚠️ 发现其他异物，建议检查并清理。'; break;
           }
         });
-        
-        cleaningAdvice.querySelector('p').textContent = advice || '识别完成，请查看详细结果。';
+        cleaningAdvice.querySelector('p')!.textContent = advice || '识别完成，请查看详细结果。';
       } else {
-        // 错误情况
         overallConfidence.textContent = '0%';
         recognitionTags.innerHTML = '<span class="text-sm text-gray-500">识别失败</span>';
         detailedResults.innerHTML = '<div class="text-sm text-gray-500">无法获取识别结果</div>';
         coverageAnalysis.innerHTML = '<div class="text-sm text-gray-500">无法分析遮挡程度</div>';
-        cleaningAdvice.querySelector('p').textContent = result.error_message || '识别过程中发生错误，请重试。';
+        cleaningAdvice.querySelector('p')!.textContent = result.error_message || '识别过程中发生错误，请重试。';
       }
 
       recognitionResultDiv.classList.remove('hidden');
     }
 
-    // 开始识别
+    // -----------------------------------------------------------------------
+    // Recognition flow — real AI model
+    // -----------------------------------------------------------------------
+
     startRecognitionBtn.addEventListener('click', async () => {
       if (!currentFile) return;
 
-      // 显示进度
       recognitionProgress.classList.remove('hidden');
       recognitionResultDiv.classList.add('hidden');
       startRecognitionBtn.disabled = true;
 
       try {
-        // 上传图片到Supabase Storage
-        const formData = new FormData();
-        formData.append('file', currentFile);
-        
-        // 模拟上传过程
-        await simulateRecognition();
-        
-        // 调用识别API
-        const imageUrl = await uploadImageToStorage(currentFile);
-        
-        const response = await fetch('/.netlify/functions/recognition', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ imageUrl }),
+        const updateProgress = (msg: string) => {
+          progressText.textContent = msg;
+        };
+
+        progressFill.style.width = '10%';
+        updateProgress('正在初始化 AI 引擎...');
+
+        // Create a fresh image element from the preview src to guarantee it's fully decoded
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = () => reject(new Error('图片加载失败，请检查图片文件是否有效'));
+          img.src = previewImg.src;
         });
 
-        if (!response.ok) {
-          throw new Error(`API调用失败: ${response.status}`);
-        }
+        progressFill.style.width = '30%';
 
-        const result = await response.json();
-        
-        // 显示结果
+        const result = await recognizeSolarImage(img, (msg) => {
+          updateProgress(msg);
+          const progress = parseInt(progressFill.style.width) || 30;
+          if (progress < 90) progressFill.style.width = Math.min(progress + 15, 90) + '%';
+        });
+
+        progressFill.style.width = '100%';
+        updateProgress('识别完成');
+        await new Promise((r) => setTimeout(r, 400));
+
         displayResult(result);
-        
-        // 保存到数据库
-        if (result.status === 'success') {
-          await saveRecognitionRecord({
-            image_url: imageUrl,
-            image_name: currentFile.name,
-            recognition_result: result,
-            processing_time: result.processing_time
-          });
-        }
-        
       } catch (error) {
         console.error('识别错误:', error);
         displayResult({
@@ -538,68 +492,95 @@ import Layout from '../layouts/Layout.astro';
           confidence: 0,
           processing_time: 0,
           api_used: 'error',
-          error_message: '识别过程中发生错误，请重试。'
+          error_message: error instanceof Error ? error.message : '识别过程中发生错误，请重试。',
         });
       } finally {
-        // 隐藏进度
         recognitionProgress.classList.add('hidden');
         startRecognitionBtn.disabled = false;
       }
     });
 
-    // 上传图片到存储
-    async function uploadImageToStorage(file) {
-      try {
-        // 这里应该调用Supabase Storage API
-        // 为了演示，我们返回一个模拟的URL
-        const timestamp = Date.now();
-        const fileName = `solar-${timestamp}-${file.name}`;
-        
-        // 在实际应用中，这里应该是真实的Supabase Storage URL
-        return `https://example.supabase.co/storage/v1/object/public/solar-images/${fileName}`;
-      } catch (error) {
-        console.error('图片上传失败:', error);
-        throw error;
-      }
-    }
+    // -----------------------------------------------------------------------
+    // Demo cases — click a sample image to run full AI pipeline
+    // -----------------------------------------------------------------------
 
-    // 保存识别记录
-    async function saveRecognitionRecord(record) {
-      try {
-        // 这里应该调用数据库API保存记录
-        console.log('保存识别记录:', record);
-        // 在实际应用中，这里应该调用Supabase API
-      } catch (error) {
-        console.error('保存记录失败:', error);
-      }
-    }
+    document.querySelectorAll('.demo-case').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const src = (btn as HTMLElement).dataset.src!;
+        const name = (btn as HTMLElement).dataset.name!;
 
-    // 保存结果
+        // Highlight active demo
+        document.querySelectorAll('.demo-case').forEach((b) => b.classList.remove('border-primary-500', 'ring-2', 'ring-primary-300'));
+        (btn as HTMLElement).classList.add('border-primary-500', 'ring-2', 'ring-primary-300');
+
+        // Show preview
+        previewImg.src = src;
+        fileName.textContent = name;
+        fileSize.textContent = '演示图片';
+        imagePreview.classList.remove('hidden');
+        startRecognitionBtn.disabled = true;
+        currentFile = null;
+
+        // Begin recognition immediately
+        recognitionProgress.classList.remove('hidden');
+        recognitionResultDiv.classList.add('hidden');
+
+        try {
+          const updateProgress = (msg: string) => { progressText.textContent = msg; };
+          progressFill.style.width = '10%';
+          updateProgress('正在加载演示图片...');
+
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          await new Promise<void>((resolve, reject) => {
+            img.onload = () => resolve();
+            img.onerror = () => reject(new Error('演示图片加载失败'));
+            img.src = src;
+          });
+
+          progressFill.style.width = '30%';
+
+          const result = await recognizeSolarImage(img, (msg) => {
+            updateProgress(msg);
+            const progress = parseInt(progressFill.style.width) || 30;
+            if (progress < 90) progressFill.style.width = Math.min(progress + 15, 90) + '%';
+          });
+
+          progressFill.style.width = '100%';
+          updateProgress('识别完成');
+          await new Promise((r) => setTimeout(r, 400));
+
+          displayResult(result);
+        } catch (error) {
+          console.error('演示识别错误:', error);
+          displayResult({
+            status: 'error', predictions: [], confidence: 0,
+            processing_time: 0, api_used: 'error',
+            error_message: error instanceof Error ? error.message : '识别过程中发生错误',
+          });
+        } finally {
+          recognitionProgress.classList.add('hidden');
+          startRecognitionBtn.disabled = false;
+        }
+      });
+    });
+
+    // -----------------------------------------------------------------------
+    // Save / share
+    // -----------------------------------------------------------------------
+
     saveResultBtn.addEventListener('click', () => {
       if (!recognitionResult) return;
-      
-      // 这里可以调用API保存结果到数据库
       alert('结果已保存到识别历史');
     });
 
-    // 分享结果
     shareResultBtn.addEventListener('click', () => {
       if (!recognitionResult) return;
-      
-      // 生成分享链接
-      const shareText = `我刚刚使用光伏图像识别工具分析了光伏板状态，识别结果：${recognitionResult.predictions.map(p => p.label).join('、')}`;
-      
+      const shareText = `我刚刚使用光伏图像识别工具分析了光伏板状态，识别结果：${recognitionResult.predictions.map((p: any) => p.label).join('、')}`;
       if (navigator.share) {
-        navigator.share({
-          title: '光伏图像识别结果',
-          text: shareText,
-          url: window.location.href
-        });
+        navigator.share({ title: '光伏图像识别结果', text: shareText, url: window.location.href });
       } else {
-        // 复制到剪贴板
-        navigator.clipboard.writeText(shareText).then(() => {
-          alert('分享内容已复制到剪贴板');
-        });
+        navigator.clipboard.writeText(shareText).then(() => { alert('分享内容已复制到剪贴板'); });
       }
     });
   </script>
