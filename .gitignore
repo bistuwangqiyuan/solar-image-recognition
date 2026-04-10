@@ -10,6 +10,7 @@ dist/
 build/
 .output/
 .netlify/
+.vercel/
 
 # Environment variables
 .env

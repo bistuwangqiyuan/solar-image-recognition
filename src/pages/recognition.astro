@@ -238,9 +238,10 @@ import Layout from '../layouts/Layout.astro';
 
   <!-- 识别脚本 -->
   <script>
-    import { recognizeSolarImage, loadModel } from '../lib/solar-recognition';
+    import { recognizeSolarImage } from '../lib/solar-recognition';
 
     let currentFile: File | null = null;
+    let currentImageBase64: string | null = null;
     let recognitionResult: any = null;
 
     const uploadArea = document.getElementById('upload-area')!;
@@ -291,12 +292,100 @@ import Layout from '../layouts/Layout.astro';
     }
 
     function getTagClass(label: string) {
-      switch (label) {
-        case '正常光伏板': return 'tag-normal';
-        case '树叶遮挡':  return 'tag-leaf';
-        case '灰尘覆盖':  return 'tag-dust';
-        case '云彩阴影':  return 'tag-cloud';
-        default:          return 'tag-other';
+      const map: Record<string, string> = {
+        '正常光伏板': 'tag-normal',
+        '正常': 'tag-normal',
+        '树叶遮挡': 'tag-leaf',
+        '灰尘覆盖': 'tag-dust',
+        '云彩阴影': 'tag-cloud',
+        '积雪覆盖': 'tag-cloud',
+      };
+      return map[label] || 'tag-other';
+    }
+
+    function getSeverityBadge(severity: string) {
+      const colors: Record<string, string> = {
+        '无': 'bg-success-100 text-success-700',
+        '轻微': 'bg-yellow-100 text-yellow-700',
+        '中等': 'bg-warning-100 text-warning-700',
+        '严重': 'bg-danger-100 text-danger-700',
+      };
+      return colors[severity] || 'bg-gray-100 text-gray-700';
+    }
+
+    function getStatusStyle(status: string) {
+      const styles: Record<string, { bg: string; text: string; border: string }> = {
+        '正常':  { bg: 'bg-success-50', text: 'text-success-800', border: 'border-success-200' },
+        '需关注': { bg: 'bg-yellow-50',  text: 'text-yellow-800',  border: 'border-yellow-200' },
+        '需维护': { bg: 'bg-warning-50', text: 'text-warning-800', border: 'border-warning-200' },
+        '紧急':  { bg: 'bg-danger-50',  text: 'text-danger-800',  border: 'border-danger-200' },
+      };
+      return styles[status] || styles['正常'];
+    }
+
+    // -----------------------------------------------------------------------
+    // Server-side AI recognition via Vercel API
+    // -----------------------------------------------------------------------
+
+    async function recognizeViaAPI(imageBase64: string): Promise<any> {
+      const res = await fetch('/api/recognize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64 }),
+      });
+      return res.json();
+    }
+
+    async function imageToBase64(imgElement: HTMLImageElement): Promise<string> {
+      const canvas = document.createElement('canvas');
+      canvas.width = imgElement.naturalWidth;
+      canvas.height = imgElement.naturalHeight;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(imgElement, 0, 0);
+      return canvas.toDataURL('image/jpeg', 0.85);
+    }
+
+    // -----------------------------------------------------------------------
+    // Unified recognition: API first → browser fallback
+    // -----------------------------------------------------------------------
+
+    async function runRecognition(
+      imgSrc: string,
+      updateProgress: (msg: string) => void,
+    ): Promise<any> {
+      updateProgress('正在准备图片...');
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('图片加载失败'));
+        img.src = imgSrc;
+      });
+
+      progressFill.style.width = '20%';
+      updateProgress('正在调用 AI Vision 识别引擎...');
+
+      try {
+        const base64 = await imageToBase64(img);
+        progressFill.style.width = '40%';
+        const apiResult = await recognizeViaAPI(base64);
+
+        if (apiResult.status === 'success') {
+          progressFill.style.width = '95%';
+          return apiResult;
+        }
+        throw new Error(apiResult.error_message || 'API 识别失败');
+      } catch (apiError) {
+        console.warn('API 识别失败，降级到浏览器端分析:', apiError);
+        progressFill.style.width = '50%';
+        updateProgress('API 不可用，正在使用浏览器端 AI 分析...');
+
+        const result = await recognizeSolarImage(img, (msg) => {
+          updateProgress(msg);
+          const progress = parseInt(progressFill.style.width) || 50;
+          if (progress < 90) progressFill.style.width = Math.min(progress + 10, 90) + '%';
+        });
+        return result;
       }
     }
 
@@ -314,7 +403,9 @@ import Layout from '../layouts/Layout.astro';
       currentFile = file;
       const reader = new FileReader();
       reader.onload = (e) => {
-        previewImg.src = e.target!.result as string;
+        const dataUrl = e.target!.result as string;
+        previewImg.src = dataUrl;
+        currentImageBase64 = dataUrl;
         fileName.textContent = file.name;
         fileSize.textContent = formatFileSize(file.size);
         imagePreview.classList.remove('hidden');
@@ -336,6 +427,7 @@ import Layout from '../layouts/Layout.astro';
 
     removeImageBtn.addEventListener('click', () => {
       currentFile = null;
+      currentImageBase64 = null;
       imagePreview.classList.add('hidden');
       startRecognitionBtn.disabled = true;
       recognitionResultDiv.classList.add('hidden');
@@ -343,7 +435,7 @@ import Layout from '../layouts/Layout.astro';
     });
 
     // -----------------------------------------------------------------------
-    // Display result
+    // Display result (enhanced with severity + report)
     // -----------------------------------------------------------------------
 
     function displayResult(result: any) {
@@ -377,21 +469,29 @@ import Layout from '../layouts/Layout.astro';
         detailedResults.innerHTML = '';
         result.predictions.forEach((p: any) => {
           const item = document.createElement('div');
-          item.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-lg';
+          item.className = 'p-3 bg-gray-50 rounded-lg space-y-1';
+          const severityHtml = p.severity
+            ? `<span class="inline-block px-2 py-0.5 rounded text-xs font-medium ${getSeverityBadge(p.severity)}">${p.severity}</span>`
+            : '';
+          const locationHtml = p.location ? `<div class="text-xs text-gray-500">位置: ${p.location}</div>` : '';
+          const suggestionHtml = p.suggestion ? `<div class="text-xs text-blue-600">${p.suggestion}</div>` : '';
           item.innerHTML = `
-            <span class="text-sm font-medium text-gray-900">${p.label}</span>
-            <div class="flex items-center space-x-2">
-              <span class="text-sm ${getConfidenceColor(p.confidence)}">${Math.round(p.confidence * 100)}%</span>
-              <span class="text-xs text-gray-500">${getConfidenceText(p.confidence)}</span>
-            </div>`;
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-medium text-gray-900">${p.label}</span>
+              <div class="flex items-center space-x-2">
+                ${severityHtml}
+                <span class="text-sm ${getConfidenceColor(p.confidence)}">${Math.round(p.confidence * 100)}%</span>
+              </div>
+            </div>
+            ${locationHtml}${suggestionHtml}`;
           detailedResults.appendChild(item);
         });
 
-        // MobileNet raw labels (if available)
+        // MobileNet raw labels (browser fallback)
         if (result.raw_labels?.length) {
           const rawDiv = document.createElement('div');
           rawDiv.className = 'mt-4 p-3 bg-gray-100 rounded-lg';
-          rawDiv.innerHTML = `<h4 class="text-xs font-medium text-gray-500 mb-2">MobileNet 原始识别标签</h4>` +
+          rawDiv.innerHTML = `<h4 class="text-xs font-medium text-gray-500 mb-2">MobileNet 原始识别标签（离线模式）</h4>` +
             result.raw_labels.slice(0, 5).map((r: any) =>
               `<div class="flex justify-between text-xs text-gray-600 py-0.5">
                 <span>${r.className}</span><span>${(r.probability * 100).toFixed(1)}%</span>
@@ -399,39 +499,73 @@ import Layout from '../layouts/Layout.astro';
           detailedResults.appendChild(rawDiv);
         }
 
-        const cover = result.predictions.filter((p: any) => p.label !== '正常光伏板' && p.label !== '云彩阴影');
-        if (cover.length > 0) {
-          const avg = cover.reduce((s: number, p: any) => s + p.confidence, 0) / cover.length;
-          const perc = Math.round(avg * 100);
-          const desc = perc >= 70 ? '严重遮挡' : perc >= 40 ? '中度遮挡' : '轻微遮挡';
-          const bg = perc >= 70 ? 'bg-danger-50 border-danger-200' : perc >= 40 ? 'bg-warning-50 border-warning-200' : 'bg-success-50 border-success-200';
+        // Report section (from Vision API)
+        if (result.report) {
+          const report = result.report;
+          const statusStyle = getStatusStyle(report.overallStatus);
           coverageAnalysis.innerHTML = `
-            <div class="p-4 rounded-lg border ${bg}">
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium text-gray-900">遮挡程度</span>
-                <span class="text-sm font-semibold ${getConfidenceColor(avg)}">${perc}%</span>
+            <div class="space-y-3">
+              <div class="p-4 rounded-lg border ${statusStyle.bg} ${statusStyle.border}">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm font-medium text-gray-900">整体状态</span>
+                  <span class="text-sm font-semibold ${statusStyle.text}">${report.overallStatus}</span>
+                </div>
+                <div class="text-sm text-gray-700">${report.summary}</div>
               </div>
-              <div class="text-sm text-gray-600">${desc}</div>
+              <div class="grid grid-cols-2 gap-3">
+                <div class="p-3 bg-gray-50 rounded-lg text-center">
+                  <div class="text-xs text-gray-500">预估发电损失</div>
+                  <div class="text-lg font-bold text-gray-900">${report.estimatedPowerLoss}%</div>
+                </div>
+                <div class="p-3 bg-gray-50 rounded-lg text-center">
+                  <div class="text-xs text-gray-500">维护优先级</div>
+                  <div class="text-lg font-bold text-gray-900">${report.maintenancePriority}</div>
+                </div>
+              </div>
             </div>`;
+
+          cleaningAdvice.querySelector('p')!.textContent = report.detailedAdvice;
         } else {
-          coverageAnalysis.innerHTML = `
-            <div class="p-4 rounded-lg border bg-success-50 border-success-200">
-              <div class="text-sm font-medium text-success-800">无遮挡</div>
-              <div class="text-sm text-success-600">光伏板状态良好</div>
-            </div>`;
+          const cover = result.predictions.filter((p: any) => p.label !== '正常光伏板' && p.label !== '云彩阴影');
+          if (cover.length > 0) {
+            const avg = cover.reduce((s: number, p: any) => s + p.confidence, 0) / cover.length;
+            const perc = Math.round(avg * 100);
+            const desc = perc >= 70 ? '严重遮挡' : perc >= 40 ? '中度遮挡' : '轻微遮挡';
+            const bg = perc >= 70 ? 'bg-danger-50 border-danger-200' : perc >= 40 ? 'bg-warning-50 border-warning-200' : 'bg-success-50 border-success-200';
+            coverageAnalysis.innerHTML = `
+              <div class="p-4 rounded-lg border ${bg}">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm font-medium text-gray-900">遮挡程度</span>
+                  <span class="text-sm font-semibold ${getConfidenceColor(avg)}">${perc}%</span>
+                </div>
+                <div class="text-sm text-gray-600">${desc}</div>
+              </div>`;
+          } else {
+            coverageAnalysis.innerHTML = `
+              <div class="p-4 rounded-lg border bg-success-50 border-success-200">
+                <div class="text-sm font-medium text-success-800">无遮挡</div>
+                <div class="text-sm text-success-600">光伏板状态良好</div>
+              </div>`;
+          }
+
+          let advice = '';
+          result.predictions.forEach((p: any) => {
+            switch (p.label) {
+              case '正常光伏板': advice += '检测到正常工作的光伏板。'; break;
+              case '树叶遮挡':  advice += ' 发现树叶遮挡，建议及时清理以保持发电效率。'; break;
+              case '灰尘覆盖':  advice += ' 检测到灰尘覆盖，建议定期清洁光伏板表面。'; break;
+              case '云彩阴影':  advice += ' 云彩阴影影响发电，这是正常现象。'; break;
+              default:          advice += ' 发现其他异物，建议检查并清理。'; break;
+            }
+          });
+          cleaningAdvice.querySelector('p')!.textContent = advice || '识别完成，请查看详细结果。';
         }
 
-        let advice = '';
-        result.predictions.forEach((p: any) => {
-          switch (p.label) {
-            case '正常光伏板': advice += '✅ 检测到正常工作的光伏板。'; break;
-            case '树叶遮挡':  advice += ' 🍃 发现树叶遮挡，建议及时清理以保持发电效率。'; break;
-            case '灰尘覆盖':  advice += ' 🧹 检测到灰尘覆盖，建议定期清洁光伏板表面。'; break;
-            case '云彩阴影':  advice += ' ☁️ 云彩阴影影响发电，这是正常现象。'; break;
-            default:          advice += ' ⚠️ 发现其他异物，建议检查并清理。'; break;
-          }
-        });
-        cleaningAdvice.querySelector('p')!.textContent = advice || '识别完成，请查看详细结果。';
+        // Show API engine badge
+        const engineBadge = document.createElement('div');
+        engineBadge.className = 'mt-3 text-xs text-gray-400 text-right';
+        engineBadge.textContent = `引擎: ${result.api_used} | 耗时: ${result.processing_time}ms`;
+        detailedResults.appendChild(engineBadge);
       } else {
         overallConfidence.textContent = '0%';
         recognitionTags.innerHTML = '<span class="text-sm text-gray-500">识别失败</span>';
@@ -444,43 +578,24 @@ import Layout from '../layouts/Layout.astro';
     }
 
     // -----------------------------------------------------------------------
-    // Recognition flow — real AI model
+    // Recognition flow
     // -----------------------------------------------------------------------
 
     startRecognitionBtn.addEventListener('click', async () => {
-      if (!currentFile) return;
+      if (!currentFile && !currentImageBase64) return;
 
       recognitionProgress.classList.remove('hidden');
       recognitionResultDiv.classList.add('hidden');
       startRecognitionBtn.disabled = true;
 
       try {
-        const updateProgress = (msg: string) => {
-          progressText.textContent = msg;
-        };
-
         progressFill.style.width = '10%';
-        updateProgress('正在初始化 AI 引擎...');
-
-        // Create a fresh image element from the preview src to guarantee it's fully decoded
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        await new Promise<void>((resolve, reject) => {
-          img.onload = () => resolve();
-          img.onerror = () => reject(new Error('图片加载失败，请检查图片文件是否有效'));
-          img.src = previewImg.src;
-        });
-
-        progressFill.style.width = '30%';
-
-        const result = await recognizeSolarImage(img, (msg) => {
-          updateProgress(msg);
-          const progress = parseInt(progressFill.style.width) || 30;
-          if (progress < 90) progressFill.style.width = Math.min(progress + 15, 90) + '%';
+        const result = await runRecognition(previewImg.src, (msg) => {
+          progressText.textContent = msg;
         });
 
         progressFill.style.width = '100%';
-        updateProgress('识别完成');
+        progressText.textContent = '识别完成';
         await new Promise((r) => setTimeout(r, 400));
 
         displayResult(result);
@@ -501,7 +616,7 @@ import Layout from '../layouts/Layout.astro';
     });
 
     // -----------------------------------------------------------------------
-    // Demo cases — click a sample image to run full AI pipeline
+    // Demo cases
     // -----------------------------------------------------------------------
 
     document.querySelectorAll('.demo-case').forEach((btn) => {
@@ -509,45 +624,28 @@ import Layout from '../layouts/Layout.astro';
         const src = (btn as HTMLElement).dataset.src!;
         const name = (btn as HTMLElement).dataset.name!;
 
-        // Highlight active demo
         document.querySelectorAll('.demo-case').forEach((b) => b.classList.remove('border-primary-500', 'ring-2', 'ring-primary-300'));
         (btn as HTMLElement).classList.add('border-primary-500', 'ring-2', 'ring-primary-300');
 
-        // Show preview
         previewImg.src = src;
         fileName.textContent = name;
         fileSize.textContent = '演示图片';
         imagePreview.classList.remove('hidden');
         startRecognitionBtn.disabled = true;
         currentFile = null;
+        currentImageBase64 = null;
 
-        // Begin recognition immediately
         recognitionProgress.classList.remove('hidden');
         recognitionResultDiv.classList.add('hidden');
 
         try {
-          const updateProgress = (msg: string) => { progressText.textContent = msg; };
           progressFill.style.width = '10%';
-          updateProgress('正在加载演示图片...');
-
-          const img = new Image();
-          img.crossOrigin = 'anonymous';
-          await new Promise<void>((resolve, reject) => {
-            img.onload = () => resolve();
-            img.onerror = () => reject(new Error('演示图片加载失败'));
-            img.src = src;
-          });
-
-          progressFill.style.width = '30%';
-
-          const result = await recognizeSolarImage(img, (msg) => {
-            updateProgress(msg);
-            const progress = parseInt(progressFill.style.width) || 30;
-            if (progress < 90) progressFill.style.width = Math.min(progress + 15, 90) + '%';
+          const result = await runRecognition(src, (msg) => {
+            progressText.textContent = msg;
           });
 
           progressFill.style.width = '100%';
-          updateProgress('识别完成');
+          progressText.textContent = '识别完成';
           await new Promise((r) => setTimeout(r, 400));
 
           displayResult(result);

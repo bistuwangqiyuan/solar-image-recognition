@@ -1,13 +1,15 @@
 import { defineConfig } from 'astro/config';
-import netlify from '@astrojs/netlify';
+import vercel from '@astrojs/vercel/serverless';
 import tailwind from '@astrojs/tailwind';
 
 // https://astro.build/config
 export default defineConfig({
   output: 'hybrid',
-  adapter: netlify(),
+  adapter: vercel({
+    maxDuration: 60,
+  }),
   integrations: [tailwind()],
-  site: 'https://solarimagecs.netlify.app',
+  site: 'https://solarimagecs.vercel.app',
   vite: {
     build: {
       rollupOptions: {
@@ -22,7 +24,6 @@ export default defineConfig({
   experimental: {
     contentCollectionCache: true
   },
-  // 禁用TypeScript严格检查以避免构建错误
   typescript: {
     strict: false
   }

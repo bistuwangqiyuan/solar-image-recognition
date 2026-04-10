@@ -27,8 +27,7 @@
     }
   },
   "include": [
-    "src/**/*",
-    "netlify/**/*"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",
