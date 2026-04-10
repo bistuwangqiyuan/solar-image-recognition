@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node scripts/fix-vercel-runtime.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "test": "node tests/run-tests.js",
@@ -51,6 +51,6 @@
   "author": "Solar Image Recognition Team",
   "license": "MIT",
   "engines": {
-    "node": ">=18.0.0"
+    "node": "20.x"
   }
 }
