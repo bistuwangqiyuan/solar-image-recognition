@@ -192,6 +192,17 @@ import Layout from '../layouts/Layout.astro';
             </div>
           </div>
 
+          <!-- 识别引擎状态 -->
+          <div class="card" id="providers-card">
+            <div class="card-header">
+              <h2 class="text-lg font-semibold text-gray-900">识别引擎</h2>
+              <span id="fallback-badge" class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">加载中...</span>
+            </div>
+            <div class="card-body">
+              <div id="providers-list" class="space-y-2 text-sm text-gray-500">加载引擎列表...</div>
+            </div>
+          </div>
+
           <!-- 使用说明 -->
           <div class="card">
             <div class="card-header">
@@ -564,7 +575,12 @@ import Layout from '../layouts/Layout.astro';
         // Show API engine badge
         const engineBadge = document.createElement('div');
         engineBadge.className = 'mt-3 text-xs text-gray-400 text-right';
-        engineBadge.textContent = `引擎: ${result.api_used} | 耗时: ${result.processing_time}ms`;
+        let engineInfo = `引擎: ${result.api_used} | 耗时: ${result.processing_time}ms`;
+        if (result.fallback_attempts?.length > 0) {
+          const tried = result.fallback_attempts.map((a: any) => a.provider).join(' → ');
+          engineInfo += ` | 自动切换: ${tried} → ${result.provider_id}`;
+        }
+        engineBadge.textContent = engineInfo;
         detailedResults.appendChild(engineBadge);
       } else {
         overallConfidence.textContent = '0%';
@@ -681,6 +697,48 @@ import Layout from '../layouts/Layout.astro';
         navigator.clipboard.writeText(shareText).then(() => { alert('分享内容已复制到剪贴板'); });
       }
     });
+
+    // -----------------------------------------------------------------------
+    // Load provider status
+    // -----------------------------------------------------------------------
+
+    (async () => {
+      const providersList = document.getElementById('providers-list')!;
+      const fallbackBadge = document.getElementById('fallback-badge')!;
+      try {
+        const res = await fetch('/api/providers');
+        const data = await res.json();
+        if (data.providers?.length > 0) {
+          const priorityIcons = ['🥇', '🥈', '🥉'];
+          providersList.innerHTML = data.providers
+            .map((p: any, i: number) => {
+              const icon = priorityIcons[i] || `#${i + 1}`;
+              return `<div class="flex items-center justify-between p-2 rounded-lg bg-gray-50">
+                <div class="flex items-center space-x-2">
+                  <span class="text-sm">${icon}</span>
+                  <span class="text-sm font-medium text-gray-700">${p.name}</span>
+                </div>
+                <span class="text-xs text-gray-400">${p.model}</span>
+              </div>`;
+            })
+            .join('');
+          if (data.fallback_enabled) {
+            fallbackBadge.textContent = `${data.count} 引擎自动切换`;
+            fallbackBadge.className = 'text-xs px-2 py-0.5 rounded-full bg-success-100 text-success-700';
+          } else {
+            fallbackBadge.textContent = '单引擎';
+            fallbackBadge.className = 'text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700';
+          }
+        } else {
+          providersList.innerHTML = '<div class="text-sm text-warning-600">未配置识别引擎</div>';
+          fallbackBadge.textContent = '未配置';
+          fallbackBadge.className = 'text-xs px-2 py-0.5 rounded-full bg-danger-100 text-danger-700';
+        }
+      } catch {
+        providersList.innerHTML = '<div class="text-sm text-gray-400">无法加载引擎状态</div>';
+        fallbackBadge.textContent = '离线';
+      }
+    })();
   </script>
 </Layout>
 

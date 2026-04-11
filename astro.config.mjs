@@ -1,15 +1,13 @@
 import { defineConfig } from 'astro/config';
-import vercel from '@astrojs/vercel/serverless';
+import netlify from '@astrojs/netlify';
 import tailwind from '@astrojs/tailwind';
 
 // https://astro.build/config
 export default defineConfig({
   output: 'hybrid',
-  adapter: vercel({
-    maxDuration: 60,
-  }),
+  adapter: netlify(),
   integrations: [tailwind()],
-  site: 'https://solarimagecs.vercel.app',
+  site: 'https://auhu.asia',
   vite: {
     build: {
       rollupOptions: {

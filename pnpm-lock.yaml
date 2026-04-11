@@ -14,12 +14,12 @@ importers:
       '@astrojs/check':
         specifier: ^0.9.4
         version: 0.9.4(prettier-plugin-astro@0.12.3)(prettier@3.6.2)(typescript@5.9.2)
+      '@astrojs/netlify':
+        specifier: ^5.5.4
+        version: 5.5.4(@types/node@20.19.17)(astro@4.16.19(@types/node@20.19.17)(rollup@4.51.0)(typescript@5.9.2))(rollup@4.51.0)
       '@astrojs/tailwind':
         specifier: ^5.1.0
         version: 5.1.5(astro@4.16.19(@types/node@20.19.17)(rollup@4.51.0)(typescript@5.9.2))(tailwindcss@3.4.17)
-      '@astrojs/vercel':
-        specifier: 7.8.2
-        version: 7.8.2(astro@4.16.19(@types/node@20.19.17)(rollup@4.51.0)(typescript@5.9.2))(rollup@4.51.0)
       '@supabase/supabase-js':
         specifier: ^2.39.0
         version: 2.57.4
@@ -119,6 +119,11 @@ packages:
   '@astrojs/markdown-remark@5.3.0':
     resolution: {integrity: sha512-r0Ikqr0e6ozPb5bvhup1qdWnSPUvQu6tub4ZLYaKyG50BXZ0ej6FhGz3GpChKpH7kglRFPObJd/bDyf2VM9pkg==}
 
+  '@astrojs/netlify@5.5.4':
+    resolution: {integrity: sha512-nIjD8cC/lGCxTtBUDrG50YEwmsgNxGB1nMZS0wwT7tFlmT2iBpYkTz3G+wmpxH89Hzs1xuMs1s21IcITyuKqEw==}
+    peerDependencies:
+      astro: ^4.2.0
+
   '@astrojs/prism@3.1.0':
     resolution: {integrity: sha512-Z9IYjuXSArkAUx3N6xj6+Bnvx8OdUSHA8YoOgyepp3+zJmtVYJIl/I18GozdJVW1p5u/CNpl3Km7/gwTJK85cw==}
     engines: {node: ^18.17.1 || ^20.3.0 || >=21.0.0}
@@ -133,10 +138,8 @@ packages:
     resolution: {integrity: sha512-/ca/+D8MIKEC8/A9cSaPUqQNZm+Es/ZinRv0ZAzvu2ios7POQSsVD+VOj7/hypWNsNM3T7RpfgNq7H2TU1KEHA==}
     engines: {node: ^18.17.1 || ^20.3.0 || >=21.0.0}
 
-  '@astrojs/vercel@7.8.2':
-    resolution: {integrity: sha512-U2JsfN0LzFMX5CPrcb+5bAAyqyYURP6Dk/mUIXX87r5x4baQy+juU+ntvf926YA0tR7u6jPRXHymE2axQ/l3NQ==}
-    peerDependencies:
-      astro: ^4.2.0
+  '@astrojs/underscore-redirects@0.3.4':
+    resolution: {integrity: sha512-vYuYtIrTwxFlDRIhuekscorsHdLL8Hr3mgOczfM1tRWVPn54dDNcKG0DmfL4DlC5YJRoqVaVdUs508Hw643NTw==}
 
   '@astrojs/yaml2ts@0.2.2':
     resolution: {integrity: sha512-GOfvSr5Nqy2z5XiwqTouBBpy5FyI6DEe+/g/Mk5am9SjILN1S5fOEvYK0GuWHg98yS/dobP4m8qyqw/URW35fQ==}
@@ -567,6 +570,18 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
+  '@netlify/functions@2.8.2':
+    resolution: {integrity: sha512-DeoAQh8LuNPvBE4qsKlezjKj0PyXDryOFJfJKo3Z1qZLKzQ21sT314KQKPVjfvw6knqijj+IO+0kHXy/TJiqNA==}
+    engines: {node: '>=14.0.0'}
+
+  '@netlify/node-cookies@0.1.0':
+    resolution: {integrity: sha512-OAs1xG+FfLX0LoRASpqzVntVV/RpYkgpI0VrUnw2u0Q1qiZUzcPffxRK8HF3gc4GjuhG5ahOEMJ9bswBiZPq0g==}
+    engines: {node: ^14.16.0 || >=16.0.0}
+
+  '@netlify/serverless-functions-api@1.26.1':
+    resolution: {integrity: sha512-q3L9i3HoNfz0SGpTIS4zTcKBbRkxzCRpd169eyiTuk3IwcPC3/85mzLHranlKo2b+HYT0gu37YxGB45aD8A3Tw==}
+    engines: {node: '>=18.0.0'}
+
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
     engines: {node: '>= 8'}
@@ -871,35 +886,6 @@ packages:
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
-
-  '@vercel/analytics@1.6.1':
-    resolution: {integrity: sha512-oH9He/bEM+6oKlv3chWuOOcp8Y6fo6/PSro8hEkgCW3pu9/OiCXiUpRUogDh3Fs3LH2sosDrx8CxeOLBEE+afg==}
-    peerDependencies:
-      '@remix-run/react': ^2
-      '@sveltejs/kit': ^1 || ^2
-      next: '>= 13'
-      react: ^18 || ^19 || ^19.0.0-rc
-      svelte: '>= 4'
-      vue: ^3
-      vue-router: ^4
-    peerDependenciesMeta:
-      '@remix-run/react':
-        optional: true
-      '@sveltejs/kit':
-        optional: true
-      next:
-        optional: true
-      react:
-        optional: true
-      svelte:
-        optional: true
-      vue:
-        optional: true
-      vue-router:
-        optional: true
-
-  '@vercel/edge@1.2.2':
-    resolution: {integrity: sha512-1+y+f6rk0Yc9ss9bRDgz/gdpLimwoRteKHhrcgHvEpjbP1nyT3ByqEMWm2BTcpIO5UtDmIFXc8zdq4LR190PDA==}
 
   '@vercel/nft@0.27.10':
     resolution: {integrity: sha512-zbaF9Wp/NsZtKLE4uVmL3FyfFwlpDyuymQM1kPbeT0mVOHKDQQNjnnfslB3REg3oZprmNFJuh3pkHBk2qAaizg==}
@@ -2937,6 +2923,9 @@ packages:
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
 
+  urlpattern-polyfill@8.0.2:
+    resolution: {integrity: sha512-Qp95D4TPJl1kC9SKigDcqgyM2VDVO4RiJc2d4qe5GrYm+zbIQCWWKAFaJNQ4BhdFeDGwBmAxqJBwWSJDb9T3BQ==}
+
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
@@ -3096,9 +3085,6 @@ packages:
 
   web-namespaces@2.0.1:
     resolution: {integrity: sha512-bKr1DkiNa2krS7qxNtdrtHAmzuYGFQLiQ13TsorsdT6ULTkPLKuu5+GsFpDlg6JFjUTwX2DyhMPG2be8uPrqsQ==}
-
-  web-vitals@3.5.2:
-    resolution: {integrity: sha512-c0rhqNcHXRkY/ogGDJQxZ9Im9D19hDihbzSQJrsioex+KnFgmMzBiy57Z1EjkhX/+OjyBpclDCzz2ITtjokFmg==}
 
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
@@ -3335,6 +3321,28 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@astrojs/netlify@5.5.4(@types/node@20.19.17)(astro@4.16.19(@types/node@20.19.17)(rollup@4.51.0)(typescript@5.9.2))(rollup@4.51.0)':
+    dependencies:
+      '@astrojs/internal-helpers': 0.4.1
+      '@astrojs/underscore-redirects': 0.3.4
+      '@netlify/functions': 2.8.2
+      '@vercel/nft': 0.27.10(rollup@4.51.0)
+      astro: 4.16.19(@types/node@20.19.17)(rollup@4.51.0)(typescript@5.9.2)
+      esbuild: 0.21.5
+      vite: 5.4.20(@types/node@20.19.17)
+    transitivePeerDependencies:
+      - '@types/node'
+      - encoding
+      - less
+      - lightningcss
+      - rollup
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+
   '@astrojs/prism@3.1.0':
     dependencies:
       prismjs: 1.30.0
@@ -3361,27 +3369,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@astrojs/vercel@7.8.2(astro@4.16.19(@types/node@20.19.17)(rollup@4.51.0)(typescript@5.9.2))(rollup@4.51.0)':
-    dependencies:
-      '@astrojs/internal-helpers': 0.4.1
-      '@vercel/analytics': 1.6.1
-      '@vercel/edge': 1.2.2
-      '@vercel/nft': 0.27.10(rollup@4.51.0)
-      astro: 4.16.19(@types/node@20.19.17)(rollup@4.51.0)(typescript@5.9.2)
-      esbuild: 0.21.5
-      fast-glob: 3.3.3
-      web-vitals: 3.5.2
-    transitivePeerDependencies:
-      - '@remix-run/react'
-      - '@sveltejs/kit'
-      - encoding
-      - next
-      - react
-      - rollup
-      - supports-color
-      - svelte
-      - vue
-      - vue-router
+  '@astrojs/underscore-redirects@0.3.4': {}
 
   '@astrojs/yaml2ts@0.2.2':
     dependencies:
@@ -3761,6 +3749,17 @@ snapshots:
       - encoding
       - supports-color
 
+  '@netlify/functions@2.8.2':
+    dependencies:
+      '@netlify/serverless-functions-api': 1.26.1
+
+  '@netlify/node-cookies@0.1.0': {}
+
+  '@netlify/serverless-functions-api@1.26.1':
+    dependencies:
+      '@netlify/node-cookies': 0.1.0
+      urlpattern-polyfill: 8.0.2
+
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
       '@nodelib/fs.stat': 2.0.5
@@ -4069,10 +4068,6 @@ snapshots:
       '@types/node': 20.19.17
 
   '@ungap/structured-clone@1.3.0': {}
-
-  '@vercel/analytics@1.6.1': {}
-
-  '@vercel/edge@1.2.2': {}
 
   '@vercel/nft@0.27.10(rollup@4.51.0)':
     dependencies:
@@ -6710,6 +6705,8 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
+  urlpattern-polyfill@8.0.2: {}
+
   util-deprecate@1.0.2: {}
 
   vfile-location@5.0.3:
@@ -6851,8 +6848,6 @@ snapshots:
   vscode-uri@3.1.0: {}
 
   web-namespaces@2.0.1: {}
-
-  web-vitals@3.5.2: {}
 
   webidl-conversions@3.0.1: {}
 
