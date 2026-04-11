@@ -51,6 +51,6 @@
   "author": "Solar Image Recognition Team",
   "license": "MIT",
   "engines": {
-    "node": "20.x"
+    "node": ">=18"
   }
 }
